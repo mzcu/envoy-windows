@@ -1,0 +1,31 @@
+name: Windows build
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - windows-build
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bazel-contrib/setup-bazel@0.19.1
+        with:
+          disk-cache: envoy-windows
+          repository-cache: true
+      - name: Build Envoy
+        shell: pwsh
+        run: |
+          $env:Path = "C:\msys64\usr\bin;$env:Path"
+          Remove-Item "C:\msys64\usr\bin\link.exe" -ErrorAction Ignore
+          $env:BAZEL_SH = "C:\msys64\usr\bin\bash.exe"
+          $env:BAZEL_LLVM = "C:\Program Files\LLVM"
+          $env:BAZEL_LLVM_PATH = "C:\Program Files\LLVM"
+          clang --version
+          bazel --output_user_root=C:\b --bazelrc=bazelrc.windows build -c fastbuild --config=windows --keep_going --verbose_failures --curses=no //:envoy
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: envoy-windows
+          path: bazel-bin/**/envoy*.exe
