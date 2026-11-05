@@ -1,0 +1,20 @@
+name: Windows smoke test
+on:
+  workflow_dispatch:
+permissions:
+  actions: read
+jobs:
+  smoke:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: envoy-windows
+          path: envoy
+          run-id: 41883528680
+          github-token: ${{ github.token }}
+      - shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Recurse envoy -Filter envoy*.exe | Select-Object -First 1
+          & $exe.FullName --version
+          exit $LASTEXITCODE
