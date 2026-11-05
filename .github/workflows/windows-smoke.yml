@@ -1,6 +1,11 @@
 name: Windows smoke test
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - windows-build
+    paths:
+      - .github/workflows/windows-smoke.yml
 permissions:
   actions: read
 jobs:
